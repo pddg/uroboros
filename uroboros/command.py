@@ -47,7 +47,32 @@ class Command(metaclass=abc.ABCMeta):
         if args is None:
             self.initialize()
             args = self._parser.parse_args()
-        exit_code = self.run(args)
+        # TODO: Make more simply
+        # Get all nested commands to validate
+        command_names = []
+        layer = 0
+        while hasattr(args, utils.get_args_layer_name(layer)):
+            name = getattr(args, utils.get_args_layer_name(layer))
+            command_names.append(name)
+            layer += 1
+        # Define command to execute
+        to_execute = self
+        exceptions = self.validate(args)
+        if len(command_names) > 0:
+            # Find sub command
+            cmd_dict = self.get_sub_commands()
+            for name in command_names:
+                cmd_dict = cmd_dict.get(to_execute)
+                cmd_dict = utils.get_matched_command(name, cmd_dict)
+                to_execute = list(cmd_dict.keys())[0]
+                exceptions.extend(to_execute.validate(args))
+        # Exit with EXIT_FAILURE when the parameter validation is failed
+        if len(exceptions) > 0:
+            for exc in exceptions:
+                self.logger.error(str(exc))
+            return utils.to_int(ExitStatus.FAILURE)
+        # Execute command
+        exit_code = args.func(args)
         return utils.to_int(exit_code)
 
     @abc.abstractmethod
@@ -69,6 +94,7 @@ class Command(metaclass=abc.ABCMeta):
                 description=self.description,
                 parents=[o.get_parser() for o in self.options]
             )
+            self._parser.set_defaults(func=self.run)
         else:
             self._parser = parser
         self.build_option(self._parser)
@@ -85,6 +111,7 @@ class Command(metaclass=abc.ABCMeta):
                 help=cmd.description,
                 parents=[o.get_parser() for o in cmd.options],
             )
+            sub_parser.set_defaults(func=cmd.run)
             cmd.initialize(sub_parser)
 
     def add_command(self, command: 'Command') -> 'Command':
@@ -93,16 +120,20 @@ class Command(metaclass=abc.ABCMeta):
         :param command: An instance of `uroboros.command.Command`
         :return: None
         """
-        command.increment_nest()
+        command.increment_nest(self._layer)
         self.sub_commands.append(command)
         return self
 
-    def increment_nest(self):
+    def increment_nest(self, parent_layer_count: int):
         """
         Increment the depth of this command.
+        :param parent_layer_count: Number of nest of parent command.
         :return: None
         """
-        self._layer += 1
+        self._layer = parent_layer_count + 1
+        # Propagate the increment to sub commands
+        for cmd in self.sub_commands:
+            cmd.increment_nest(self._layer)
 
     def get_sub_commands(self) -> 'Dict[Command, dict]':
         """
@@ -145,6 +176,7 @@ class Command(metaclass=abc.ABCMeta):
         :param args: Parsed arguments
         :return: The list of exceptions
         """
+        # TODO: Execute validation recursively
         exceptions = []
         for opt in self.options:
             exceptions.extend(opt.validate(args))
