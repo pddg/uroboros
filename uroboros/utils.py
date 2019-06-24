@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 def get_args_layer_name(layer: int):
-    return f"__layer{layer}"
+    return "__layer{layer}".format(layer=layer)
 
 
 def get_matched_command(name, command_dict: 'Dict[Command, Dict[Command, dict]]') -> 'Dict[Command, dict]':

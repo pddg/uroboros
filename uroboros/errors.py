@@ -4,7 +4,8 @@ class CommandNotRegisteredError(Exception):
         self.name = name
 
     def __str__(self):
-        return f"Command '{self.name}' has not been registered yet."
+        return "Command '{name}' has not been registered yet."\
+            .format(name=self.name)
 
 
 class NoCommandError(Exception):
@@ -13,4 +14,5 @@ class NoCommandError(Exception):
         self.name = name
 
     def __str__(self):
-        return f"There is no command named '{self.name}'."
+        return "There is no command named '{name}'."\
+            .format(name=self.name)

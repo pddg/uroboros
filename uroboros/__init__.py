@@ -1,6 +1,6 @@
-from .command import Command
-from .option import Option
-from .constants import ExitStatus
+from .command import Command  # NOQA
+from .option import Option  # NOQA
+from .constants import ExitStatus  # NOQA
 
 
-version = "v0.1.0"
+version = "0.1.0"

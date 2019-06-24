@@ -76,7 +76,7 @@ class Command(metaclass=abc.ABCMeta):
             return
         parser = self._parser.add_subparsers(
             dest=utils.get_args_layer_name(self._layer),
-            title=f"{self.name}'s sub commands",
+            title="Sub commands",
         )
         for cmd in self.sub_commands:
             sub_parser = parser.add_parser(
