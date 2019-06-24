@@ -54,6 +54,9 @@ class Command(metaclass=abc.ABCMeta):
     def run(self, args: 'argparse.Namespace') -> 'Union[ExitStatus, int]':
         raise NotImplementedError
 
+    def build_option(self, parser: 'argparse.ArgumentParser') -> 'argparse.ArgumentParser':
+        return parser
+
     def initialize(self, parser: 'Optional[argparse.ArgumentParser]' = None):
         """
         Initialize this command and its sub commands recursively.
@@ -68,6 +71,7 @@ class Command(metaclass=abc.ABCMeta):
             )
         else:
             self._parser = parser
+        self.build_option(self._parser)
         if len(self.sub_commands) == 0:
             return
         parser = self._parser.add_subparsers(
