@@ -86,7 +86,7 @@ class Command(metaclass=abc.ABCMeta):
             )
             cmd.initialize(sub_parser)
 
-    def add_command(self, command: 'Command') -> None:
+    def add_command(self, command: 'Command') -> 'Command':
         """
         Add sub command to this command.
         :param command: An instance of `uroboros.command.Command`
@@ -94,6 +94,7 @@ class Command(metaclass=abc.ABCMeta):
         """
         command.increment_nest()
         self.sub_commands.append(command)
+        return self
 
     def increment_nest(self):
         """
