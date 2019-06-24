@@ -4,8 +4,15 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+flake8 = "*"
+pytest = "*"
+tox = "*"
 
 [packages]
 
 [requires]
 python_version = "3.7"
+
+[scripts]
+lint = "flake8 --show-source ."
+test = "py.test tests"
