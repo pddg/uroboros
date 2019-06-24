@@ -61,7 +61,7 @@ class HelloCommand(Command):
     name = 'hello'
     description = 'Hello world!'
 
-    def run(self, args: 'argparse.Namespace') -> 'Union[ExitStatus, int]':
+    def run(self, args):
         print(self.description)
         return ExitStatus.SUCCESS
 
@@ -87,7 +87,7 @@ optional arguments:
 
 Sub commands:
   {hello}
-    hello     This is a sample command using uroboros
+    hello     Hello world!
 $ python sample.py --version
 sample v1.0.0
 $ python sample.py hello

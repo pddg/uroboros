@@ -81,7 +81,8 @@ class Command(metaclass=abc.ABCMeta):
         for cmd in self.sub_commands:
             sub_parser = parser.add_parser(
                 name=cmd.name,
-                help=self.description,
+                description=cmd.description,
+                help=cmd.description,
                 parents=[o.get_parser() for o in cmd.options],
             )
             cmd.initialize(sub_parser)
