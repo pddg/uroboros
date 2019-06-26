@@ -8,8 +8,12 @@ if TYPE_CHECKING:
     from uroboros.command import Command
 
 
-def get_args_layer_name(layer: int):
-    return "__layer{layer}".format(layer=layer)
+def get_args_command_name(layer: int):
+    return "__layer{layer}_command".format(layer=layer)
+
+
+def get_args_validator_name(layer: int):
+    return "__layer{layer}_validator".format(layer=layer)
 
 
 def get_matched_command(name, command_dict: 'Dict[Command, Dict[Command, dict]]') -> 'Dict[Command, dict]':
