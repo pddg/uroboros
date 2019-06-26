@@ -47,26 +47,14 @@ class Command(metaclass=abc.ABCMeta):
         if args is None:
             self.initialize()
             args = self._parser.parse_args()
-        # TODO: Make more simply
-        # Get all nested commands to validate
-        command_names = []
-        layer = 0
-        while hasattr(args, utils.get_args_layer_name(layer)):
-            name = getattr(args, utils.get_args_layer_name(layer))
-            command_names.append(name)
-            layer += 1
-        # Define command to execute
-        to_execute = self
+        # Get all nested validator
         exceptions = self.validate(args)
-        if len(command_names) > 0:
-            # Find sub command
-            cmd_dict = self.get_sub_commands()
-            for name in command_names:
-                cmd_dict = cmd_dict.get(to_execute)
-                cmd_dict = utils.get_matched_command(name, cmd_dict)
-                to_execute = list(cmd_dict.keys())[0]
-                exceptions.extend(to_execute.validate(args))
-        # Exit with EXIT_FAILURE when the parameter validation is failed
+        layer = self._layer
+        while hasattr(args, utils.get_args_validator_name(layer)):
+            validator = getattr(args, utils.get_args_validator_name(layer))
+            exceptions.extend(validator(args))
+            layer += 1
+        # Exit with ExitStatus.FAILURE when the parameter validation is failed
         if len(exceptions) > 0:
             for exc in exceptions:
                 self.logger.error(str(exc))
@@ -101,7 +89,7 @@ class Command(metaclass=abc.ABCMeta):
         if len(self.sub_commands) == 0:
             return
         parser = self._parser.add_subparsers(
-            dest=utils.get_args_layer_name(self._layer),
+            dest=utils.get_args_command_name(self._layer),
             title="Sub commands",
         )
         for cmd in self.sub_commands:
@@ -111,6 +99,10 @@ class Command(metaclass=abc.ABCMeta):
                 help=cmd.description,
                 parents=[o.get_parser() for o in cmd.options],
             )
+            # Add validator
+            validator_name = utils.get_args_validator_name(self._layer)
+            sub_parser.set_defaults(**{validator_name: cmd.validate})
+            # Add function to execute
             sub_parser.set_defaults(func=cmd.run)
             cmd.initialize(sub_parser)
 
@@ -176,7 +168,6 @@ class Command(metaclass=abc.ABCMeta):
         :param args: Parsed arguments
         :return: The list of exceptions
         """
-        # TODO: Execute validation recursively
         exceptions = []
         for opt in self.options:
             exceptions.extend(opt.validate(args))
