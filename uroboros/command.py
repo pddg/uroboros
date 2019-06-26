@@ -7,7 +7,7 @@ from uroboros import errors
 from uroboros import utils
 
 if TYPE_CHECKING:
-    from typing import List, Dict, Optional, Union
+    from typing import List, Dict, Optional, Union, Set
     from uroboros.option import Option
     from uroboros.constants import ExitStatus
 
@@ -31,6 +31,7 @@ class Command(metaclass=abc.ABCMeta):
         self._layer = 0
 
         self.sub_commands = []  # type: List[Command]
+        self._parent_ids = {id(self)}  # type: Set[int]
 
         # The option parser for this command
         # This is enabled after initialization.
@@ -112,9 +113,23 @@ class Command(metaclass=abc.ABCMeta):
         :param command: An instance of `uroboros.command.Command`
         :return: None
         """
+        command_id = id(command)
+        if command_id in self._parent_ids or \
+                command_id in self._sub_command_ids:
+            raise errors.CommandDuplicateError(command, self)
+        command.register_parent(self._parent_ids)
         command.increment_nest(self._layer)
         self.sub_commands.append(command)
         return self
+
+    @property
+    def _sub_command_ids(self) -> 'Set[int]':
+        return {id(cmd) for cmd in self.sub_commands}
+
+    def register_parent(self, parent_ids: 'Set[int]'):
+        self._parent_ids |= parent_ids
+        for cmd in self.sub_commands:
+            cmd.register_parent(self._parent_ids)
 
     def increment_nest(self, parent_layer_count: int):
         """
