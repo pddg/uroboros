@@ -6,6 +6,8 @@ from uroboros.constants import ExitStatus
 if TYPE_CHECKING:
     from typing import Dict, Union
     from uroboros.command import Command
+    CommandDict = Dict[Command, dict]
+    CommandsDict = Dict[Command, CommandDict]
 
 
 def get_args_command_name(layer: int):
@@ -16,7 +18,7 @@ def get_args_validator_name(layer: int):
     return "__layer{layer}_validator".format(layer=layer)
 
 
-def get_matched_command(name, command_dict: 'Dict[Command, Dict[Command, dict]]') -> 'Dict[Command, dict]':
+def get_matched_command(name, command_dict: 'CommandsDict') -> 'CommandDict':
     for cmd, sub_cmds in command_dict.items():
         if cmd.name == name:
             return {cmd: sub_cmds}
@@ -28,4 +30,5 @@ def to_int(exit_code: 'Union[ExitStatus, int]'):
         return exit_code.value
     if isinstance(exit_code, int):
         return exit_code
-    raise ValueError("exit_code must be 'uroboros.constants.ExitStatus' or int.")
+    raise ValueError(
+        "exit_code must be 'uroboros.constants.ExitStatus' or int.")
