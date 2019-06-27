@@ -1,5 +1,7 @@
 # uroboros
 
+[![Build Status](https://travis-ci.com/pddg/uroboros.svg?branch=master)](https://travis-ci.com/pddg/uroboros)
+
 Simple framework for building scalable CLI tool.
 
 **NOTE**  
