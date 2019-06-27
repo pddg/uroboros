@@ -15,7 +15,8 @@ class Option(metaclass=abc.ABCMeta):
         return self.build_option(self.parser)
 
     @abc.abstractmethod
-    def build_option(self, parser: 'argparse.ArgumentParser') -> 'argparse.ArgumentParser':
+    def build_option(self, parser: 'argparse.ArgumentParser') \
+            -> 'argparse.ArgumentParser':
         raise NotImplementedError
 
     @abc.abstractmethod
