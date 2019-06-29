@@ -6,7 +6,7 @@ from uroboros.constants import ExitStatus
 class TestExitStatus(object):
 
     @pytest.mark.parametrize(
-        'exit_code', [0, 1, 2, 126, 127, 128, 130]
+        'exit_code', [0, 1, 2, 126, 127, 128, 130, 255]
     )
     def test_assumed(self, exit_code):
         expected = exit_code
@@ -33,6 +33,7 @@ class TestExitStatus(object):
         assert expected_value == actual.value
         assert expected_name == actual.name
 
+    @pytest.mark.skipif('sys.version_info < (3, 6)')
     @pytest.mark.parametrize(
         'exit_code', [-1, 256]
     )
@@ -41,6 +42,7 @@ class TestExitStatus(object):
         actual = ExitStatus(exit_code)
         assert expected == actual
 
+    @pytest.mark.skipif('sys.version_info < (3, 6)')
     @pytest.mark.parametrize(
         'exit_code', [1.5, '0', None]
     )

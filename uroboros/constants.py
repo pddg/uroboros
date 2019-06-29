@@ -1,3 +1,4 @@
+import sys
 from enum import IntEnum
 
 
@@ -267,8 +268,10 @@ class ExitStatus(IntEnum):
     FATAL_SIGNAL_125 = 253
     FATAL_SIGNAL_126 = 254
 
-    @classmethod
-    def _missing_(cls, value):
-        if isinstance(value, int):
-            return cls.OUT_OF_RANGE
-        return cls.INVALID
+    # Python 3.5 do not support `_missing_` API
+    if sys.version_info > (3, 5):
+        @classmethod
+        def _missing_(cls, value):
+            if isinstance(value, int):
+                return cls.OUT_OF_RANGE
+            return cls.INVALID
