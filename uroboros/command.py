@@ -59,10 +59,17 @@ class Command(metaclass=abc.ABCMeta):
         if len(exceptions) > 0:
             for exc in exceptions:
                 self.logger.error(str(exc))
-            return utils.to_int(ExitStatus.FAILURE)
+            return ExitStatus.FAILURE
         # Execute command
         exit_code = args.func(args)
-        return utils.to_int(exit_code)
+        # FIXME: Just return when drop support for Python 3.5
+        try:
+            return ExitStatus(exit_code)
+        except ValueError:
+            if isinstance(exit_code, int):
+                if exit_code < 0 or exit_code > 255:
+                    return ExitStatus.OUT_OF_RANGE
+            return ExitStatus.INVALID
 
     @abc.abstractmethod
     def run(self, args: 'argparse.Namespace') -> 'Union[ExitStatus, int]':

@@ -1,10 +1,9 @@
 from typing import TYPE_CHECKING
 
 from uroboros import errors
-from uroboros.constants import ExitStatus
 
 if TYPE_CHECKING:
-    from typing import Dict, Union
+    from typing import Dict
     from uroboros.command import Command
     CommandDict = Dict[Command, dict]
     CommandsDict = Dict[Command, CommandDict]
@@ -23,12 +22,3 @@ def get_matched_command(name, command_dict: 'CommandsDict') -> 'CommandDict':
         if cmd.name == name:
             return {cmd: sub_cmds}
     raise errors.NoCommandError(name)
-
-
-def to_int(exit_code: 'Union[ExitStatus, int]'):
-    if isinstance(exit_code, ExitStatus):
-        return exit_code.value
-    if isinstance(exit_code, int):
-        return exit_code
-    raise ValueError(
-        "exit_code must be 'uroboros.constants.ExitStatus' or int.")
