@@ -62,7 +62,7 @@ class Command(metaclass=abc.ABCMeta):
             return ExitStatus.FAILURE
         # Execute command
         exit_code = args.func(args)
-        # FIXME: Just return ExitStatus(exit_code) when drop support for Python 3.5
+        # FIXME: Just return when drop support for Python 3.5
         try:
             return ExitStatus(exit_code)
         except ValueError:
