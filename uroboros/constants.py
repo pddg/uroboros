@@ -269,7 +269,7 @@ class ExitStatus(IntEnum):
     FATAL_SIGNAL_126 = 254
 
     # Python 3.5 do not support `_missing_` API
-    if sys.version_info > (3, 5):
+    if sys.version_info >= (3, 6):
         @classmethod
         def _missing_(cls, value):
             if isinstance(value, int):
