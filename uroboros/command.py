@@ -59,10 +59,10 @@ class Command(metaclass=abc.ABCMeta):
         if len(exceptions) > 0:
             for exc in exceptions:
                 self.logger.error(str(exc))
-            return utils.to_int(ExitStatus.FAILURE)
+            return ExitStatus.FAILURE
         # Execute command
         exit_code = args.func(args)
-        return utils.to_int(exit_code)
+        return ExitStatus(exit_code)
 
     @abc.abstractmethod
     def run(self, args: 'argparse.Namespace') -> 'Union[ExitStatus, int]':
