@@ -50,3 +50,19 @@ class TestExitStatus(object):
         expected = ExitStatus.INVALID
         actual = ExitStatus(exit_code)
         assert expected == actual
+
+    @pytest.mark.skipif('sys.version_info >= (3, 6)')
+    @pytest.mark.parametrize(
+        'exit_code', [-1, 256]
+    )
+    def test_py35_out_of_range(self, exit_code):
+        with pytest.raises(ValueError):
+            ExitStatus(exit_code)
+
+    @pytest.mark.skipif('sys.version_info >= (3, 6)')
+    @pytest.mark.parametrize(
+        'exit_code', [1.5, '0', None]
+    )
+    def test_py35_invalid(self, exit_code):
+        with pytest.raises(ValueError):
+            ExitStatus(exit_code)
