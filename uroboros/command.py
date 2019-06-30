@@ -22,7 +22,11 @@ class Command(metaclass=abc.ABCMeta):
     name = None  # type: Optional[str]
 
     # Description of this command.
-    description = None  # type: Optional[str]
+    long_description = None  # type: Optional[str]
+
+    # Short description of this command displayed in
+    # the help message of parent command.
+    short_description = None  # type: Optional[str]
 
     # Option for this command
     options = []  # type: List[Option]
@@ -112,8 +116,8 @@ class Command(metaclass=abc.ABCMeta):
         for cmd in self.sub_commands:
             sub_parser = parser.add_parser(
                 name=cmd.name,
-                description=cmd.description,
-                help=cmd.description,
+                description=cmd.long_description,
+                help=cmd.short_description,
                 parents=[o.get_parser() for o in cmd.options],
             )
             cmd.initialize(sub_parser)
@@ -121,7 +125,7 @@ class Command(metaclass=abc.ABCMeta):
     def create_default_parser(self):
         parser = argparse.ArgumentParser(
             prog=self.name,
-            description=self.description,
+            description=self.long_description,
             parents=[o.get_parser() for o in self.options]
         )
         parser.set_defaults(func=self.run)
