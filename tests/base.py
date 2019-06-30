@@ -3,7 +3,7 @@ import uroboros
 
 class RootCommand(uroboros.Command):
     name = 'root'
-    description = 'command of root'
+    long_description = 'command of root'
 
     error = Exception(name)
     value = False
@@ -27,7 +27,7 @@ class RootCommand(uroboros.Command):
 
 class SecondCommand(uroboros.Command):
     name = 'second'
-    description = 'command of second'
+    long_description = 'command of second'
 
     error = Exception(name)
     value = 0
@@ -51,7 +51,7 @@ class SecondCommand(uroboros.Command):
 
 class ThirdCommand(uroboros.Command):
     name = 'third'
-    description = 'command of third'
+    long_description = 'command of third'
 
     error = Exception(name)
     value = 'third'
