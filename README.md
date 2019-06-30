@@ -42,7 +42,7 @@ from uroboros.constants import ExitStatus
 class RootCommand(Command):
     """Root command of your application"""
     name = 'sample'
-    description = 'This is a sample command using uroboros'
+    long_description = 'This is a sample command using uroboros'
 
     def build_option(self, parser):
         """Add optional arguments"""
@@ -61,10 +61,11 @@ class RootCommand(Command):
 class HelloCommand(Command):
     """Sub command of root"""
     name = 'hello'
-    description = 'Hello world!'
+    short_description = 'Hello world!'
+    long_description = 'Print "Hello world!" to stdout'
 
     def run(self, args):
-        print(self.description)
+        print(self.short_description)
         return ExitStatus.SUCCESS
 
 # Create command tree
