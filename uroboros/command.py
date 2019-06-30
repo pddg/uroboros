@@ -1,15 +1,16 @@
 import abc
 import argparse
 import logging
+import sys
 from typing import TYPE_CHECKING
 
 from uroboros import errors
 from uroboros import utils
+from uroboros.constants import ExitStatus
 
 if TYPE_CHECKING:
     from typing import List, Dict, Optional, Union, Set
     from uroboros.option import Option
-    from uroboros.constants import ExitStatus
 
 
 class Command(metaclass=abc.ABCMeta):
@@ -37,17 +38,21 @@ class Command(metaclass=abc.ABCMeta):
         # This is enabled after initialization.
         self._parser = None  # type: Optional[argparse.ArgumentParser]
 
-    def execute(self, args: 'Optional[argparse.Namespace]' = None) -> int:
+    def execute(self, argv: 'List[str]' = None) -> int:
         """
         Execute `uroboros.command.Command.run` internally.
         And return exit code (integer).
-        :param args:    Parsed arguments. If None is given, try to parse
+        :param argv:    Arguments to parse. If None is given, try to parse
                         `sys.argv` by the parser of this command.
         :return:        Exit status (integer only)
         """
-        if args is None:
+        try:
+            self._check_initialized()
+        except errors.CommandNotRegisteredError:
             self.initialize()
-            args = self._parser.parse_args()
+        if argv is None:
+            argv = sys.argv
+        args = self._parser.parse_args(argv)
         # Get all nested validator
         exceptions = self.validate(args)
         layer = self._layer
@@ -86,18 +91,21 @@ class Command(metaclass=abc.ABCMeta):
         :return: None
         """
         if parser is None:
-            self._parser = argparse.ArgumentParser(
-                prog=self.name,
-                description=self.description,
-                parents=[o.get_parser() for o in self.options]
-            )
-            self._parser.set_defaults(func=self.run)
+            self._parser = self.create_default_parser()
         else:
             self._parser = parser
+        # Add validator
+        validator_name = utils.get_args_validator_name(self._layer)
+        self._parser.set_defaults(**{validator_name: self.validate})
+        # Add function to execute
+        self._parser.set_defaults(func=self.run)
         self.build_option(self._parser)
+        self.initialize_sub_parsers(self._parser)
+
+    def initialize_sub_parsers(self, parser: 'argparse.ArgumentParser'):
         if len(self.sub_commands) == 0:
             return
-        parser = self._parser.add_subparsers(
+        parser = parser.add_subparsers(
             dest=utils.get_args_command_name(self._layer),
             title="Sub commands",
         )
@@ -108,12 +116,16 @@ class Command(metaclass=abc.ABCMeta):
                 help=cmd.description,
                 parents=[o.get_parser() for o in cmd.options],
             )
-            # Add validator
-            validator_name = utils.get_args_validator_name(self._layer)
-            sub_parser.set_defaults(**{validator_name: cmd.validate})
-            # Add function to execute
-            sub_parser.set_defaults(func=cmd.run)
             cmd.initialize(sub_parser)
+
+    def create_default_parser(self):
+        parser = argparse.ArgumentParser(
+            prog=self.name,
+            description=self.description,
+            parents=[o.get_parser() for o in self.options]
+        )
+        parser.set_defaults(func=self.run)
+        return parser
 
     def add_command(self, command: 'Command') -> 'Command':
         """
