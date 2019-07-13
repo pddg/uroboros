@@ -1,6 +1,6 @@
 import uroboros
 
-from .root import root_cmd, print_version
+from .root import print_version
 
 
 class VersionCommand(uroboros.Command):
@@ -15,4 +15,4 @@ class VersionCommand(uroboros.Command):
         return uroboros.ExitStatus.SUCCESS
 
 
-root_cmd.add_command(VersionCommand())
+command = VersionCommand()

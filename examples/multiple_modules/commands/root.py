@@ -27,4 +27,4 @@ class RootCommand(uroboros.Command):
         return uroboros.ExitStatus.SUCCESS
 
 
-root_cmd = RootCommand()
+command = RootCommand()
