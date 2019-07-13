@@ -55,7 +55,7 @@ class Command(metaclass=abc.ABCMeta):
         except errors.CommandNotRegisteredError:
             self.initialize()
         if argv is None:
-            argv = sys.argv
+            argv = sys.argv[1:]
         args = self._parser.parse_args(argv)
         # Get all nested validator
         exceptions = self.validate(args)
