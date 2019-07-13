@@ -1,6 +1,9 @@
 # uroboros
 
-[![Build Status](https://travis-ci.com/pddg/uroboros.svg?branch=master)](https://travis-ci.com/pddg/uroboros)
+[![Build Status](https://travis-ci.com/pddg/uroboros.svg?branch=master)](https://travis-ci.com/pddg/uroboros) [![PyPI pyversions](https://img.shields.io/pypi/pyversions/uroboros.svg)](https://pypi.python.org/pypi/uroboros/) [![PyPI version shields.io](https://img.shields.io/pypi/v/uroboros.svg)](https://pypi.python.org/pypi/uroboros/)
+ [![GitHub license](https://img.shields.io/github/license/pddg/uroboros.svg)](https://github.com/pddg/uroboros/blob/master/LICENSE)
+
+
 
 Simple framework for building scalable CLI tool.
 
@@ -25,9 +28,7 @@ This framework currently under development. Please be careful to use.
 Install uroboros
 
 ```bash
-$ git clone https://github.com/pddg/uroboros
-$ cd /path/to/uroboros
-$ pip install -e .
+$ pip install uroboros
 ```
 
 ## How to use
@@ -110,6 +111,14 @@ root_cmd = RootCommand().add_command(
 You can see other examples in [examples](examples).
 
 ## Develop
+
+First, clone this repository and install uroboros with editable option.
+
+```bash
+$ git clone https://github.com/pddg/uroboros
+$ cd /path/to/uroboros
+$ pip install -e .
+```
 
 Use `Pipenv` for lint and test.
 
