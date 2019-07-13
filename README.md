@@ -107,6 +107,8 @@ root_cmd = RootCommand().add_command(
 )
 ```
 
+You can see other examples in [examples](examples).
+
 ## Develop
 
 Use `Pipenv` for lint and test.
