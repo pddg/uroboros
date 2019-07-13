@@ -3,6 +3,7 @@ from pathlib import Path
 from uroboros import Command, version, Option, ExitStatus
 
 
+# First, declare option class inherited from `uroboros.Option`.
 class CommonOption(Option):
 
     def validate(self, args):
@@ -73,6 +74,7 @@ class FilesCommand(Command):
     def build_option(self, parser):
         # Additional options
         parser.add_argument('-e', '--exclude', type=str, nargs='*',
+                            metavar='EXTENSION',
                             help='File extension to hide')
         return parser
 
@@ -80,8 +82,11 @@ class FilesCommand(Command):
         p = args.path  # type:  Path
         if args.absolute and not p.is_absolute():
             p = p.expanduser().resolve()
+        excludes = args.exclude
+        if excludes is None:
+            excludes = []
         for path in p.iterdir():
-            if path.is_file() and path.suffix[1:] not in args.exclude:
+            if path.is_file() and path.suffix[1:] not in excludes:
                 print(str(path))
         return ExitStatus.SUCCESS
 
