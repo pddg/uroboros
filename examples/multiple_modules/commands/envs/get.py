@@ -11,7 +11,8 @@ class GetCommand(Command):
 
     def build_option(self, parser):
         parser.add_argument('name', type=str, help='Env var name')
-        parser.add_argument('-u', '--upper', default=False, action='store_true',
+        parser.add_argument('-u', '--upper', default=False,
+                            action='store_true',
                             help='Capitalize all chars of given name')
         return parser
 

@@ -15,7 +15,8 @@ class CommonOption(Option):
 
     def build_option(self, parser):
         parser.add_argument('path', type=Path, help="Path to show")
-        parser.add_argument('-a', '--absolute', default=False, action='store_true',
+        parser.add_argument('-a', '--absolute', default=False,
+                            action='store_true',
                             help='Show absolute path')
         return parser
 
