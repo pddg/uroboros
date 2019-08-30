@@ -134,6 +134,11 @@ class TestCommand(object):
             actual = command._sub_command_ids
             assert actual == expected
 
+    def test_add_others(self):
+        root = RootCommand()
+        with pytest.raises(AssertionError):
+            root.add_command("")
+
     @pytest.mark.parametrize(
         'command_set', [
             {RootCommand(): {SecondCommand(): {ThirdCommand(): {}}}},

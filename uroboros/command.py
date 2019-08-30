@@ -122,7 +122,7 @@ class Command(metaclass=abc.ABCMeta):
             )
             cmd.initialize(sub_parser)
 
-    def create_default_parser(self):
+    def create_default_parser(self) -> 'argparse.ArgumentParser':
         parser = argparse.ArgumentParser(
             prog=self.name,
             description=self.long_description,
@@ -137,6 +137,9 @@ class Command(metaclass=abc.ABCMeta):
         :param command: An instance of `uroboros.command.Command`
         :return: None
         """
+        assert isinstance(command, Command), \
+            "Given command is not an instance of `uroboros.Command` or" \
+            "an instance of its subclass."
         command_id = id(command)
         if command_id in self._parent_ids or \
                 command_id in self._sub_command_ids:
