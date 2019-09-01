@@ -169,7 +169,7 @@ class Command(metaclass=abc.ABCMeta):
         for cmd in self.sub_commands:
             cmd.increment_nest(self._layer)
 
-    def get_sub_commands(self) -> 'Dict[Command, dict]':
+    def get_all_sub_commands(self) -> 'Dict[Command, dict]':
         """
         Get the nested dictionary of `Command`.
         Traverse all sub commands of this command recursively.

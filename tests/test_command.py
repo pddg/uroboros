@@ -141,6 +141,27 @@ class TestCommand(object):
 
     @pytest.mark.parametrize(
         'command_set', [
+            {RootCommand(): {}},
+            {RootCommand(): {SecondCommand(): {}}},
+            {RootCommand(): {SecondCommand(): {ThirdCommand(): {}}}},
+            {RootCommand(): {SecondCommand(): {}, ThirdCommand(): {}}},
+        ]
+    )
+    def test_get_all_sub_commands(self, command_set):
+
+        def add_command(cmd, cmd_set):
+            for c, sub_set in cmd_set.items():
+                cmd.add_command(c)
+                add_command(c, sub_set)
+
+        for root, sub_commands in command_set.items():
+            add_command(root, sub_commands)
+
+        root = list(command_set.keys())[0]
+        assert command_set == root.get_all_sub_commands()
+
+    @pytest.mark.parametrize(
+        'command_set', [
             {RootCommand(): {SecondCommand(): {ThirdCommand(): {}}}},
             {RootCommand(): {SecondCommand(): {}, ThirdCommand(): {}}},
         ]
