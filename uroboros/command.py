@@ -9,7 +9,7 @@ from uroboros import utils
 from uroboros.constants import ExitStatus
 
 if TYPE_CHECKING:
-    from typing import List, Dict, Optional, Union, Set, Any
+    from typing import List, Dict, Optional, Union, Set
     from uroboros.option import Option
 
 
@@ -67,6 +67,8 @@ class Command(metaclass=abc.ABCMeta):
             for exc in exceptions:
                 self.logger.error(str(exc))
             return ExitStatus.FAILURE
+        # Run hook after validation
+        args = self._pre_hook_validated(args, commands)
         # Execute command
         exit_code = args.func(args)
         # FIXME: Just return when drop support for Python 3.5
@@ -228,12 +230,15 @@ class Command(metaclass=abc.ABCMeta):
             args
         )
 
-    def before_validate(self, unsafe_args: 'argparse.Namespace') -> 'argparse.Namespace':
+    def before_validate(self,
+                        unsafe_args: 'argparse.Namespace'
+                        ) -> 'argparse.Namespace':
         """
-        Hook function before validation. This method will be called in order from
-        root command to its children.
+        Hook function before validation. This method will be called
+        in order from root command to its children.
         Use `unsafe_args` carefully since it has not been validated yet.
-        You can set any value into `unsafe_args` and you must return it finally.
+        You can set any value into `unsafe_args` and you must return it
+        finally.
         :param unsafe_args: An instance of argparse.Namespace
         :return: An instance of argparse.Namespace
         """

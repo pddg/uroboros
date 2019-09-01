@@ -12,9 +12,10 @@ def get_args_section_name(layer: int):
 
 def call_one_by_one(objs, method_name: str, args):
     for obj in objs:
-        assert hasattr(obj, method_name), "'{cmd}' has no method '{method}".format(
-            cmd=obj.__name__,
-            method=method_name
-        )
+        assert hasattr(obj, method_name), \
+            "'{cmd}' has no method '{method}".format(
+                cmd=obj.__name__,
+                method=method_name
+            )
         args = getattr(obj, method_name)(args)
     return args
