@@ -263,6 +263,30 @@ class Command(metaclass=abc.ABCMeta):
             exceptions.extend(opt.validate(args))
         return exceptions
 
+    def _pre_hook_validated(self,
+                            args: 'argparse.Namespace',
+                            sub_commands: 'List[Command]'
+                            ) -> 'argparse.Namespace':
+        return utils.call_one_by_one(
+            [self] + sub_commands,
+            "after_validate",
+            args
+        )
+
+    def after_validate(self,
+                       safe_args: 'argparse.Namespace'
+                       ) -> 'argparse.Namespace':
+        """
+        Hook function after validation. This method will be called
+        in order from root command to its children.
+        Given argument `safe_args` is validated by validation method
+        of your commands. You can set any value into `safe_args` and
+        you must return it finally.
+        :param safe_args: An instance of argparse.Namespace
+        :return: An instance of argparse.Namespace
+        """
+        return safe_args
+
     def _check_initialized(self):
         initialized = False
         if self._parser is not None:

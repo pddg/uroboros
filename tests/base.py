@@ -27,6 +27,14 @@ class RootCommand(uroboros.Command):
         )
         return unsafe_args
 
+    def after_validate(self, safe_args):
+        setattr(
+            safe_args,
+            'after_validate_{}'.format(self.name),
+            self.value
+        )
+        return safe_args
+
     def validate(self, args):
         if args.root != self.value:
             return [self.error]
@@ -54,6 +62,14 @@ class SecondCommand(uroboros.Command):
             self.value
         )
         return unsafe_args
+
+    def after_validate(self, safe_args):
+        setattr(
+            safe_args,
+            'after_validate_{}'.format(self.name),
+            self.value
+        )
+        return safe_args
 
     def run(self, args):
         print(args.second)
@@ -86,6 +102,14 @@ class ThirdCommand(uroboros.Command):
             self.value
         )
         return unsafe_args
+
+    def after_validate(self, safe_args):
+        setattr(
+            safe_args,
+            'after_validate_{}'.format(self.name),
+            self.value
+        )
+        return safe_args
 
     def run(self, args):
         print(args.third)

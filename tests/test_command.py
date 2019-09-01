@@ -269,7 +269,7 @@ class TestCommand(object):
             actual = out[1:]
             assert actual == (logging.ERROR, expected)
 
-    def test_before_hook(self):
+    def test_before_validate(self):
         args = argparse.Namespace()
         root = RootCommand()
         assert root.before_validate(args) == args
@@ -286,4 +286,23 @@ class TestCommand(object):
         args = root._pre_hook(argparse.Namespace(), commands[1:])
         for cmd in commands:
             key = "before_validate_{}".format(cmd.name)
+            assert getattr(args, key, None) == cmd.value
+
+    def test_after_validate(self):
+        args = argparse.Namespace()
+        root = RootCommand()
+        assert root.after_validate(args) == args
+
+    @pytest.mark.parametrize(
+        'commands', [
+            [RootCommand()],
+            [RootCommand(), SecondCommand()],
+            [RootCommand(), SecondCommand(), ThirdCommand()]
+        ]
+    )
+    def test_pre_hook_validated(self, commands):
+        root = commands[0]
+        args = root._pre_hook_validated(argparse.Namespace(), commands[1:])
+        for cmd in commands:
+            key = "after_validate_{}".format(cmd.name)
             assert getattr(args, key, None) == cmd.value
