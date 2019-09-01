@@ -169,6 +169,23 @@ class Command(metaclass=abc.ABCMeta):
         for cmd in self.sub_commands:
             cmd.increment_nest(self._layer)
 
+    def get_sub_commands(self, args: 'argparse.Namespace') -> 'List[Command]':
+        """
+        Get the list of `Command` specified by CLI except myself.
+        if myself is root_cmd and "root_cmd first_cmd second_cmd"
+        is specified in CLI, this may return the instances of first_cmd
+        and second_cmd.
+        :return: List of `uroboros.Command`
+        """
+        commands = []
+        # Do not include myself
+        layer = self._layer + 1
+        while hasattr(args, utils.get_args_command_name(layer)):
+            cmd = getattr(args, utils.get_args_command_name(layer))
+            commands.append(cmd)
+            layer += 1
+        return commands
+
     def get_all_sub_commands(self) -> 'Dict[Command, dict]':
         """
         Get the nested dictionary of `Command`.
