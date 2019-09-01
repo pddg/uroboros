@@ -57,18 +57,18 @@ class Command(metaclass=abc.ABCMeta):
         if argv is None:
             argv = sys.argv[1:]
         args = self._parser.parse_args(argv)
-        # Get all nested validator
-        exceptions = self.validate(args)
-        layer = self._layer
-        while hasattr(args, utils.get_args_validator_name(layer)):
-            validator = getattr(args, utils.get_args_validator_name(layer))
-            exceptions.extend(validator(args))
-            layer += 1
+        commands = self.get_sub_commands(args)
+        # Run hook before validation
+        args = self._pre_hook(args, commands)
+        # Execute validation recursively
+        exceptions = self._validate_all(args, commands)
         # Exit with ExitStatus.FAILURE when the parameter validation is failed
         if len(exceptions) > 0:
             for exc in exceptions:
                 self.logger.error(str(exc))
             return ExitStatus.FAILURE
+        # Run hook after validation
+        args = self._pre_hook_validated(args, commands)
         # Execute command
         exit_code = args.func(args)
         # FIXME: Just return when drop support for Python 3.5
@@ -99,8 +99,8 @@ class Command(metaclass=abc.ABCMeta):
         else:
             self._parser = parser
         # Add validator
-        validator_name = utils.get_args_validator_name(self._layer)
-        self._parser.set_defaults(**{validator_name: self.validate})
+        cmd_name = utils.get_args_command_name(self._layer)
+        self._parser.set_defaults(**{cmd_name: self})
         # Add function to execute
         self._parser.set_defaults(func=self.run)
         self.build_option(self._parser)
@@ -110,7 +110,7 @@ class Command(metaclass=abc.ABCMeta):
         if len(self.sub_commands) == 0:
             return
         parser = parser.add_subparsers(
-            dest=utils.get_args_command_name(self._layer),
+            dest=utils.get_args_section_name(self._layer),
             title="Sub commands",
         )
         for cmd in self.sub_commands:
@@ -169,7 +169,24 @@ class Command(metaclass=abc.ABCMeta):
         for cmd in self.sub_commands:
             cmd.increment_nest(self._layer)
 
-    def get_sub_commands(self) -> 'Dict[Command, dict]':
+    def get_sub_commands(self, args: 'argparse.Namespace') -> 'List[Command]':
+        """
+        Get the list of `Command` specified by CLI except myself.
+        if myself is root_cmd and "root_cmd first_cmd second_cmd"
+        is specified in CLI, this may return the instances of first_cmd
+        and second_cmd.
+        :return: List of `uroboros.Command`
+        """
+        commands = []
+        # Do not include myself
+        layer = self._layer + 1
+        while hasattr(args, utils.get_args_command_name(layer)):
+            cmd = getattr(args, utils.get_args_command_name(layer))
+            commands.append(cmd)
+            layer += 1
+        return commands
+
+    def get_all_sub_commands(self) -> 'Dict[Command, dict]':
         """
         Get the nested dictionary of `Command`.
         Traverse all sub commands of this command recursively.
@@ -192,7 +209,7 @@ class Command(metaclass=abc.ABCMeta):
         """
         commands_dict = {}
         for sub_cmd in self.sub_commands:
-            commands_dict.update(sub_cmd.get_sub_commands())
+            commands_dict.update(sub_cmd.get_all_sub_commands())
         return {
             self: commands_dict,
         }
@@ -204,6 +221,37 @@ class Command(metaclass=abc.ABCMeta):
         self._check_initialized()
         return self._parser.print_help()
 
+    def _pre_hook(self,
+                  args: 'argparse.Namespace',
+                  sub_commands: 'List[Command]') -> 'argparse.Namespace':
+        return utils.call_one_by_one(
+            [self] + sub_commands,
+            "before_validate",
+            args
+        )
+
+    def before_validate(self,
+                        unsafe_args: 'argparse.Namespace'
+                        ) -> 'argparse.Namespace':
+        """
+        Hook function before validation. This method will be called
+        in order from root command to its children.
+        Use `unsafe_args` carefully since it has not been validated yet.
+        You can set any value into `unsafe_args` and you must return it
+        finally.
+        :param unsafe_args: An instance of argparse.Namespace
+        :return: An instance of argparse.Namespace
+        """
+        return unsafe_args
+
+    def _validate_all(self,
+                      args: 'argparse.Namespace',
+                      sub_commands: 'List[Command]') -> 'List[Exception]':
+        exceptions = []
+        for cmd in [self] + sub_commands:
+            exceptions.extend(cmd.validate(args))
+        return exceptions
+
     def validate(self, args: 'argparse.Namespace') -> 'List[Exception]':
         """
         Validate parameters of given options.
@@ -214,6 +262,30 @@ class Command(metaclass=abc.ABCMeta):
         for opt in self.options:
             exceptions.extend(opt.validate(args))
         return exceptions
+
+    def _pre_hook_validated(self,
+                            args: 'argparse.Namespace',
+                            sub_commands: 'List[Command]'
+                            ) -> 'argparse.Namespace':
+        return utils.call_one_by_one(
+            [self] + sub_commands,
+            "after_validate",
+            args
+        )
+
+    def after_validate(self,
+                       safe_args: 'argparse.Namespace'
+                       ) -> 'argparse.Namespace':
+        """
+        Hook function after validation. This method will be called
+        in order from root command to its children.
+        Given argument `safe_args` is validated by validation method
+        of your commands. You can set any value into `safe_args` and
+        you must return it finally.
+        :param safe_args: An instance of argparse.Namespace
+        :return: An instance of argparse.Namespace
+        """
+        return safe_args
 
     def _check_initialized(self):
         initialized = False

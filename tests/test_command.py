@@ -141,6 +141,52 @@ class TestCommand(object):
 
     @pytest.mark.parametrize(
         'command_set', [
+            {RootCommand(): {}},
+            {RootCommand(): {SecondCommand(): {}}},
+            {RootCommand(): {SecondCommand(): {ThirdCommand(): {}}}},
+            {RootCommand(): {SecondCommand(): {}, ThirdCommand(): {}}},
+        ]
+    )
+    def test_get_all_sub_commands(self, command_set):
+
+        def add_command(cmd, cmd_set):
+            for c, sub_set in cmd_set.items():
+                cmd.add_command(c)
+                add_command(c, sub_set)
+
+        for root, sub_commands in command_set.items():
+            add_command(root, sub_commands)
+
+        root = list(command_set.keys())[0]
+        assert command_set == root.get_all_sub_commands()
+
+    @pytest.mark.parametrize(
+        'command_set,argv', [
+            ({RootCommand(): {SecondCommand(): {ThirdCommand(): {}}}}, []),
+            ({RootCommand(): {SecondCommand(): {ThirdCommand(): {}}}}, ['second']),
+            ({RootCommand(): {SecondCommand(): {ThirdCommand(): {}}}}, ['second', 'third']),
+            ({RootCommand(): {SecondCommand(): {}, ThirdCommand(): {}}}, ['second']),
+            ({RootCommand(): {SecondCommand(): {}, ThirdCommand(): {}}}, ['third']),
+        ]
+    )
+    def test_get_sub_commands(self, command_set, argv):
+
+        def add_command(cmd, cmd_set):
+            for c, sub_set in cmd_set.items():
+                cmd.add_command(c)
+                add_command(c, sub_set)
+
+        for root, sub_commands in command_set.items():
+            add_command(root, sub_commands)
+
+        root = list(command_set.keys())[0]
+        root.initialize()
+        args = root._parser.parse_args(argv)
+        cmd_names = [cmd.name for cmd in root.get_sub_commands(args)]
+        assert argv == cmd_names
+
+    @pytest.mark.parametrize(
+        'command_set', [
             {RootCommand(): {SecondCommand(): {ThirdCommand(): {}}}},
             {RootCommand(): {SecondCommand(): {}, ThirdCommand(): {}}},
         ]
@@ -222,3 +268,41 @@ class TestCommand(object):
             out = caplog.record_tuples[0]
             actual = out[1:]
             assert actual == (logging.ERROR, expected)
+
+    def test_before_validate(self):
+        args = argparse.Namespace()
+        root = RootCommand()
+        assert root.before_validate(args) == args
+
+    @pytest.mark.parametrize(
+        'commands', [
+            [RootCommand()],
+            [RootCommand(), SecondCommand()],
+            [RootCommand(), SecondCommand(), ThirdCommand()]
+        ]
+    )
+    def test_pre_hook(self, commands):
+        root = commands[0]
+        args = root._pre_hook(argparse.Namespace(), commands[1:])
+        for cmd in commands:
+            key = "before_validate_{}".format(cmd.name)
+            assert getattr(args, key, None) == cmd.value
+
+    def test_after_validate(self):
+        args = argparse.Namespace()
+        root = RootCommand()
+        assert root.after_validate(args) == args
+
+    @pytest.mark.parametrize(
+        'commands', [
+            [RootCommand()],
+            [RootCommand(), SecondCommand()],
+            [RootCommand(), SecondCommand(), ThirdCommand()]
+        ]
+    )
+    def test_pre_hook_validated(self, commands):
+        root = commands[0]
+        args = root._pre_hook_validated(argparse.Namespace(), commands[1:])
+        for cmd in commands:
+            key = "after_validate_{}".format(cmd.name)
+            assert getattr(args, key, None) == cmd.value
