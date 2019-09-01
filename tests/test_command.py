@@ -268,3 +268,22 @@ class TestCommand(object):
             out = caplog.record_tuples[0]
             actual = out[1:]
             assert actual == (logging.ERROR, expected)
+
+    def test_before_hook(self):
+        args = argparse.Namespace()
+        root = RootCommand()
+        assert root.before_validate(args) == args
+
+    @pytest.mark.parametrize(
+        'commands', [
+            [RootCommand()],
+            [RootCommand(), SecondCommand()],
+            [RootCommand(), SecondCommand(), ThirdCommand()]
+        ]
+    )
+    def test_pre_hook(self, commands):
+        root = commands[0]
+        args = root._pre_hook(argparse.Namespace(), commands[1:])
+        for cmd in commands:
+            key = "before_validate_{}".format(cmd.name)
+            assert getattr(args, key, None) == cmd.value

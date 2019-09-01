@@ -57,13 +57,11 @@ class Command(metaclass=abc.ABCMeta):
         if argv is None:
             argv = sys.argv[1:]
         args = self._parser.parse_args(argv)
-        # Get all nested validator and hook before validation
-        exceptions = self.validate(args)
-        layer = self._layer
-        while hasattr(args, utils.get_args_command_name(layer)):
-            sub_cmd = getattr(args, utils.get_args_command_name(layer))
-            exceptions.extend(sub_cmd.validate(args))
-            layer += 1
+        commands = self.get_sub_commands(args)
+        # Run hook before validation
+        args = self._pre_hook(args, commands)
+        # Execute validation recursively
+        exceptions = self._validate_all(args, commands)
         # Exit with ExitStatus.FAILURE when the parameter validation is failed
         if len(exceptions) > 0:
             for exc in exceptions:
@@ -221,17 +219,14 @@ class Command(metaclass=abc.ABCMeta):
         self._check_initialized()
         return self._parser.print_help()
 
-    def _call_one_by_one(self,
-                         commands: 'List[Command]',
-                         method_name: str,
-                         args: 'Any'):
-        for cmd in commands:
-            assert hasattr(cmd, method_name), "'{cmd}' has no method '{method}".format(
-                cmd=cmd.__name__,
-                method=method_name
-            )
-            args = getattr(cmd, method_name)(args)
-        return args
+    def _pre_hook(self,
+                  args: 'argparse.Namespace',
+                  sub_commands: 'List[Command]') -> 'argparse.Namespace':
+        return utils.call_one_by_one(
+            [self] + sub_commands,
+            "before_validate",
+            args
+        )
 
     def before_validate(self, unsafe_args: 'argparse.Namespace') -> 'argparse.Namespace':
         """
@@ -243,6 +238,14 @@ class Command(metaclass=abc.ABCMeta):
         :return: An instance of argparse.Namespace
         """
         return unsafe_args
+
+    def _validate_all(self,
+                      args: 'argparse.Namespace',
+                      sub_commands: 'List[Command]') -> 'List[Exception]':
+        exceptions = []
+        for cmd in [self] + sub_commands:
+            exceptions.extend(cmd.validate(args))
+        return exceptions
 
     def validate(self, args: 'argparse.Namespace') -> 'List[Exception]':
         """
