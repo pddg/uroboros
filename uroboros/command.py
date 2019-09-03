@@ -51,7 +51,8 @@ class Command(metaclass=abc.ABCMeta):
         :return:        Exit status (integer only)
         """
         assert getattr(self, "name", None) is not None, \
-            "{} does not have `name` attribute.".format(self.__class__.__name__)
+            "{} does not have `name` attribute.".format(
+                self.__class__.__name__)
         try:
             self._check_initialized()
         except errors.CommandNotRegisteredError:
@@ -143,7 +144,8 @@ class Command(metaclass=abc.ABCMeta):
             "Given command is not an instance of `uroboros.Command` or" \
             "an instance of its subclass."
         assert getattr(command, "name", None) is not None, \
-            "{} does not have `name` attribute.".format(command.__class__.__name__)
+            "{} does not have `name` attribute.".format(
+                command.__class__.__name__)
         command_id = id(command)
         if command_id in self._parent_ids or \
                 command_id in self._sub_command_ids:
