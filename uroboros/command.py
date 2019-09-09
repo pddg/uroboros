@@ -134,25 +134,26 @@ class Command(metaclass=abc.ABCMeta):
         parser.set_defaults(func=self.run)
         return parser
 
-    def add_command(self, command: 'Command') -> 'Command':
+    def add_command(self, *commands: 'Command') -> 'Command':
         """
         Add sub command to this command.
-        :param command: An instance of `uroboros.command.Command`
+        :param commands: An instance of `uroboros.command.Command`
         :return: None
         """
-        assert isinstance(command, Command), \
-            "Given command is not an instance of `uroboros.Command` or" \
-            "an instance of its subclass."
-        assert getattr(command, "name", None) is not None, \
-            "{} does not have `name` attribute.".format(
-                command.__class__.__name__)
-        command_id = id(command)
-        if command_id in self._parent_ids or \
-                command_id in self._sub_command_ids:
-            raise errors.CommandDuplicateError(command, self)
-        command.register_parent(self._parent_ids)
-        command.increment_nest(self._layer)
-        self.sub_commands.append(command)
+        for command in commands:
+            assert isinstance(command, Command), \
+                "Given command is not an instance of `uroboros.Command` or" \
+                "an instance of its subclass."
+            assert getattr(command, "name", None) is not None, \
+                "{} does not have `name` attribute.".format(
+                    command.__class__.__name__)
+            command_id = id(command)
+            if command_id in self._parent_ids or \
+                    command_id in self._sub_command_ids:
+                raise errors.CommandDuplicateError(command, self)
+            command.register_parent(self._parent_ids)
+            command.increment_nest(self._layer)
+            self.sub_commands.append(command)
         return self
 
     @property
