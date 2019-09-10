@@ -16,5 +16,7 @@ class EnvCommand(Command):
 
 
 command = EnvCommand()
-command.add_command(get.command)
-command.add_command(list_.command)
+command.add_command(
+    get.command,
+    list_.command
+)

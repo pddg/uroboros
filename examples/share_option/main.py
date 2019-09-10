@@ -20,6 +20,13 @@ class CommonOption(Option):
                             help='Show absolute path')
         return parser
 
+    def after_validate(self, safe_args):
+        p = safe_args.path  # type:  Path
+        if safe_args.absolute and not p.is_absolute():
+            p = p.expanduser().resolve()
+        safe_args.path = p
+        return safe_args
+
 
 class RootCommand(Command):
 
@@ -53,10 +60,7 @@ class DirsCommand(Command):
     options = [CommonOption()]
 
     def run(self, args):
-        p = args.path  # type:  Path
-        if args.absolute and not p.is_absolute():
-            p = p.expanduser().resolve()
-        for path in p.iterdir():
+        for path in args.path.iterdir():
             if path.is_dir():
                 print(str(path))
         return ExitStatus.SUCCESS
@@ -80,21 +84,20 @@ class FilesCommand(Command):
         return parser
 
     def run(self, args):
-        p = args.path  # type:  Path
-        if args.absolute and not p.is_absolute():
-            p = p.expanduser().resolve()
         excludes = args.exclude
         if excludes is None:
             excludes = []
-        for path in p.iterdir():
+        for path in args.path.iterdir():
             if path.is_file() and path.suffix[1:] not in excludes:
                 print(str(path))
         return ExitStatus.SUCCESS
 
 
 root = RootCommand()
-root.add_command(DirsCommand())
-root.add_command(FilesCommand())
+root.add_command(
+    DirsCommand(),
+    FilesCommand()
+)
 
 
 if __name__ == '__main__':
