@@ -3,9 +3,10 @@ from commands import root, version, env
 
 def main():
     root_cmd = root.command
-    root_cmd.add_command(version.command)
-    root_cmd.add_command(env.command)
-
+    root_cmd.add_command(
+        version.command,
+        env.command
+    )
     return root_cmd.execute()
 
 
