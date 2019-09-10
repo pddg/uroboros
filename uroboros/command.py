@@ -221,6 +221,13 @@ class Command(metaclass=abc.ABCMeta):
             self: commands_dict,
         }
 
+    def get_options(self) -> 'List[Option]':
+        """
+        Get all `Option` instance of this `Command`.
+        :return: List of Option instance
+        """
+        return self.options
+
     def print_help(self):
         """
         Helper method for print the help message of this command.
@@ -233,9 +240,24 @@ class Command(metaclass=abc.ABCMeta):
                   sub_commands: 'List[Command]') -> 'argparse.Namespace':
         return utils.call_one_by_one(
             [self] + sub_commands,
-            "before_validate",
-            args
+            "_hook",
+            args,
+            hook_name="before_validate"
         )
+
+    def _hook(self,
+              args: 'argparse.Namespace',
+              hook_name: str) -> 'argparse.Namespace':
+        for opt in self.get_options():
+            assert hasattr(opt, hook_name), \
+                "{} does not have '{}' method".format(
+                    opt.__class__.__name__, hook_name)
+            args = getattr(opt, hook_name)(args)
+        assert hasattr(self, hook_name), \
+            "{} does not have '{}' method".format(
+                self.__class__.__name__, hook_name)
+        args = getattr(self, hook_name)(args)
+        return args
 
     def before_validate(self,
                         unsafe_args: 'argparse.Namespace'
@@ -276,8 +298,9 @@ class Command(metaclass=abc.ABCMeta):
                             ) -> 'argparse.Namespace':
         return utils.call_one_by_one(
             [self] + sub_commands,
-            "after_validate",
-            args
+            "_hook",
+            args,
+            hook_name='after_validate'
         )
 
     def after_validate(self,
