@@ -19,6 +19,15 @@ class Option(metaclass=abc.ABCMeta):
             -> 'argparse.ArgumentParser':
         raise NotImplementedError
 
-    @abc.abstractmethod
+    def before_validate(self,
+                        unsafe_args: 'argparse.Namespace'
+                        ) -> 'argparse.Namespace':
+        return unsafe_args
+
     def validate(self, args: 'argparse.Namespace') -> 'List[Exception]':
-        raise NotImplementedError
+        raise []
+
+    def after_validate(self,
+                       safe_args: 'argparse.Namespace'
+                       ) -> 'argparse.Namespace':
+        return safe_args
