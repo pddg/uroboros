@@ -121,7 +121,7 @@ class Command(metaclass=abc.ABCMeta):
                 name=cmd.name,
                 description=cmd.long_description,
                 help=cmd.short_description,
-                parents=[o.get_parser() for o in cmd.options],
+                parents=[o.get_parser() for o in cmd.get_options()],
             )
             cmd.initialize(sub_parser)
 
@@ -129,7 +129,7 @@ class Command(metaclass=abc.ABCMeta):
         parser = argparse.ArgumentParser(
             prog=self.name,
             description=self.long_description,
-            parents=[o.get_parser() for o in self.options]
+            parents=[o.get_parser() for o in self.get_options()]
         )
         parser.set_defaults(func=self.run)
         return parser

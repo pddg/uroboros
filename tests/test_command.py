@@ -4,6 +4,7 @@ from unittest import mock
 
 import pytest
 
+from uroboros import Option
 from uroboros.errors import CommandDuplicateError
 from .base import RootCommand, SecondCommand, ThirdCommand
 
@@ -318,3 +319,22 @@ class TestCommand(object):
         for cmd in commands:
             key = "after_validate_{}".format(cmd.name)
             assert getattr(args, key, None) == cmd.value
+
+    def test_create_default_parser(self):
+        class Opt(Option):
+            def build_option(self, parser):
+                parser.add_argument("--test", type=str)
+                return parser
+
+        class Cmd(RootCommand):
+            options = [Opt()]
+
+        class Cmd2(RootCommand):
+            def get_options(self):
+                return [Opt()]
+
+        argv = ["--test", "test"]
+        for cmd in [Cmd(), Cmd2()]:
+            cmd_parser = cmd.create_default_parser()
+            args = cmd_parser.parse_args(argv)
+            assert args.test == 'test'
