@@ -1,5 +1,6 @@
 import abc
 import argparse
+from functools import lru_cache
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -11,6 +12,7 @@ class Option(metaclass=abc.ABCMeta):
     def __init__(self):
         self.parser = argparse.ArgumentParser(add_help=False)
 
+    @lru_cache()
     def get_parser(self) -> 'argparse.ArgumentParser':
         return self.build_option(self.parser)
 
