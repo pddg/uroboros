@@ -13,6 +13,18 @@ from .base import RootCommand, SecondCommand, ThirdCommand
 def commands():
     return RootCommand(), SecondCommand(), ThirdCommand()
 
+class Opt1(Option):
+    def build_option(self, parser):
+        return parser
+
+class Opt2(Option):
+    def build_option(self, parser):
+        return parser
+
+class Opt3(Option):
+    def build_option(self, parser):
+        return parser
+
 
 def get_sub_commands(cmd_set):
     if len(cmd_set) == 0:
@@ -338,3 +350,34 @@ class TestCommand(object):
             cmd_parser = cmd.create_default_parser()
             args = cmd_parser.parse_args(argv)
             assert args.test == 'test'
+
+    @pytest.mark.parametrize(
+        'option_objs', [
+            [Opt1(), Opt2(), Opt3()],
+        ]
+    )
+    def test_get_options(self, option_objs):
+        additional_opt = Opt1()
+        class SourceCommand(RootCommand):
+            options = option_objs
+        class Cmd(SourceCommand):
+            def get_options(self):
+                opts =super(Cmd, self).get_options()
+                opts.append(additional_opt)
+                return opts
+        root = SourceCommand()
+        source_opts = root.get_options()
+        cmd = Cmd()
+        actual_options = cmd.get_options()
+        expected_options = option_objs + [additional_opt]
+        assert len(actual_options) == len(expected_options) 
+        # All options are instantiated
+        types = map(type, actual_options)
+        bools = map(lambda x: x != type, types)
+        assert all(bools)
+        # All class is correct
+        actual_classes = map(lambda x: type(x), actual_options)
+        expected_classes = map(lambda x: x if type(x) == type else type(x), expected_options)
+        assert list(actual_classes) == list(expected_classes)
+        # Inheritance source class is not modified
+        assert RootCommand().get_options() == []

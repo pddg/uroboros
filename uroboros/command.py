@@ -226,7 +226,7 @@ class Command(metaclass=abc.ABCMeta):
         Get all `Option` instance of this `Command`.
         :return: List of Option instance
         """
-        return self.options
+        return [opt() if type(opt) == type else opt for opt in self.options]
 
     def print_help(self):
         """
