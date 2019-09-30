@@ -88,3 +88,14 @@ class TestOption(object):
             pass
         with pytest.raises(TypeError):
             Opt()
+
+    @pytest.mark.parametrize(
+        "option", [
+            NoHookOption(),
+            SampleOption(),
+        ]
+    )
+    def test_call_twice(self, option):
+        expected = option.get_parser()
+        assert option.get_parser() == expected
+
