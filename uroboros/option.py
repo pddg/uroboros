@@ -27,7 +27,7 @@ class Option(metaclass=abc.ABCMeta):
         return unsafe_args
 
     def validate(self, args: 'argparse.Namespace') -> 'List[Exception]':
-        raise []
+        return []
 
     def after_validate(self,
                        safe_args: 'argparse.Namespace'
