@@ -57,6 +57,13 @@ class NoHookOption(uroboros.Option):
 
 class TestOption(object):
 
+    def test_validate(self):
+        args = argparse.Namespace()
+        nohook = NoHookOption()
+        actual = nohook.validate(args)
+        assert type(actual) == list
+        assert len(actual) == 0
+
     def test_no_before_validate(self):
         args = argparse.Namespace()
         nohook = NoHookOption()
