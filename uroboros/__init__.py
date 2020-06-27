@@ -3,4 +3,4 @@ from .option import Option  # NOQA
 from .constants import ExitStatus  # NOQA
 
 
-version = "0.2.4"
+version = "0.2.5"
