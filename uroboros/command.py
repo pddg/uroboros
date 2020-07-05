@@ -367,7 +367,7 @@ class Command(metaclass=abc.ABCMeta):
                        ) -> 'argparse.Namespace':
         """Hook function after validation.
 
-        This method will be called in order from root command to 
+        This method will be called in order from root command to
         its children. Given argument `safe_args` is validated by
         validation method of your commands. You can set any value
         into `safe_args` and you must return it finally.
