@@ -347,7 +347,7 @@ class TestCommand(object):
 
         argv = ["--test", "test"]
         for cmd in [Cmd(), Cmd2()]:
-            cmd_parser = cmd.create_default_parser()
+            cmd_parser = cmd._create_default_parser()
             args = cmd_parser.parse_args(argv)
             assert args.test == 'test'
 

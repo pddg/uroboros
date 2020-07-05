@@ -10,6 +10,7 @@ tox = "*"
 uroboros = {editable = true,path = "."}
 
 [packages]
+zipp = "*"
 
 [requires]
 python_version = "3.7"
