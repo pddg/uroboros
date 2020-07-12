@@ -1,6 +1,6 @@
 # uroboros
 
-[![Build Status](https://travis-ci.com/pddg/uroboros.svg?branch=master)](https://travis-ci.com/pddg/uroboros) [![PyPI pyversions](https://img.shields.io/pypi/pyversions/uroboros.svg)](https://pypi.python.org/pypi/uroboros/) [![PyPI version shields.io](https://img.shields.io/pypi/v/uroboros.svg)](https://pypi.python.org/pypi/uroboros/)
+![Test](https://github.com/pddg/uroboros/workflows/Test/badge.svg) [![PyPI pyversions](https://img.shields.io/pypi/pyversions/uroboros.svg)](https://pypi.python.org/pypi/uroboros/) [![PyPI version shields.io](https://img.shields.io/pypi/v/uroboros.svg)](https://pypi.python.org/pypi/uroboros/)
  [![GitHub license](https://img.shields.io/github/license/pddg/uroboros.svg)](https://github.com/pddg/uroboros/blob/master/LICENSE)
 
 
