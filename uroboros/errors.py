@@ -5,6 +5,7 @@ if TYPE_CHECKING:
 
 
 class CommandNotRegisteredError(Exception):
+    """The command is not initialized"""
 
     def __init__(self, name: str):
         self.name = name
@@ -25,6 +26,7 @@ class NoCommandError(Exception):
 
 
 class CommandDuplicateError(Exception):
+    """Same command instance is added"""
 
     def __init__(self, command: 'Command', parent: 'Command'):
         self.command = command
