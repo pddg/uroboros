@@ -81,4 +81,3 @@ class Option(metaclass=abc.ABCMeta):
             argparse.Namespace: An instance of argparse.Namespace
         """
         return safe_args
-
